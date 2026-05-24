@@ -9,6 +9,7 @@ import authRoutes from "./routes/auth.js";
 import jobsPublicRoutes from "./routes/jobsPublic.js";
 import applicationsPublicRoutes from "./routes/applicationsPublic.js";
 import adminRoutes from "./routes/admin.js";
+import chatRoutes from "./routes/chat.js";
 
 const serverRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 dotenv.config({ path: path.join(serverRoot, ".env") });
@@ -27,6 +28,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/jobs", jobsPublicRoutes);
 app.use("/api/applications", applicationsPublicRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/chat", chatRoutes);
 
 async function main() {
   await connectDb();

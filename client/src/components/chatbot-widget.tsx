@@ -1,10 +1,12 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { apiFetch } from "@/lib/api";
 
 type ChatMessage = {
   by: "user" | "bot";
   text: string;
+  subtitle?: string;
 };
 
 const suggestions = [
@@ -13,7 +15,7 @@ const suggestions = [
   { key: "admin", answer: "Admin can view applications and add users manually from Admin page." },
 ];
 
-function botReply(input: string) {
+function botReplyLocal(input: string) {
   const text = input.toLowerCase();
   const found = suggestions.find((item) => text.includes(item.key));
   if (found) {
@@ -25,13 +27,14 @@ function botReply(input: string) {
 export function ChatbotWidget() {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("");
+  const [sending, setSending] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     { by: "bot", text: "Hi, I am Campus Assistant. Ask me about jobs or admin flow." },
   ]);
 
-  const canSend = useMemo(() => value.trim().length > 0, [value]);
+  const canSend = useMemo(() => value.trim().length > 0 && !sending, [value, sending]);
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canSend) {
       return;
@@ -39,9 +42,37 @@ export function ChatbotWidget() {
     const userText = value.trim();
     setValue("");
     setMessages((prev) => [...prev, { by: "user", text: userText }]);
-    window.setTimeout(() => {
-      setMessages((prev) => [...prev, { by: "bot", text: botReply(userText) }]);
-    }, 300);
+    setSending(true);
+    try {
+      const data = await apiFetch<{ reply: string; source?: string; hint?: string; warning?: string }>(
+        "/api/chat",
+        {
+          method: "POST",
+          body: JSON.stringify({ message: userText }),
+        }
+      );
+      const subtitle =
+        data.warning || (data.source === "local" && data.hint ? data.hint : undefined) || undefined;
+      setMessages((prev) => [
+        ...prev,
+        {
+          by: "bot",
+          text: data.reply,
+          ...(subtitle ? { subtitle } : {}),
+        },
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          by: "bot",
+          text: botReplyLocal(userText),
+          subtitle: "Could not reach the API. Using offline answers.",
+        },
+      ]);
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -53,15 +84,19 @@ export function ChatbotWidget() {
           </div>
           <div className="h-64 space-y-2 overflow-y-auto p-3 text-sm">
             {messages.map((message, index) => (
-              <div
-                key={`${message.by}-${index}`}
-                className={`max-w-[85%] rounded-xl px-3 py-2 ${
-                  message.by === "bot"
-                    ? "bg-slate-100 text-slate-900"
-                    : "ml-auto bg-cyan-500 text-white"
-                }`}
-              >
-                {message.text}
+              <div key={`${message.by}-${index}`}>
+                <div
+                  className={`max-w-[85%] rounded-xl px-3 py-2 ${
+                    message.by === "bot"
+                      ? "bg-slate-100 text-slate-900"
+                      : "ml-auto bg-cyan-500 text-white"
+                  }`}
+                >
+                  {message.text}
+                </div>
+                {message.subtitle && (
+                  <p className="mt-0.5 max-w-[85%] text-[10px] leading-snug text-slate-500">{message.subtitle}</p>
+                )}
               </div>
             ))}
           </div>
@@ -71,13 +106,14 @@ export function ChatbotWidget() {
               onChange={(event) => setValue(event.target.value)}
               placeholder="Ask here..."
               className="w-full rounded-lg border px-2 py-1 text-sm outline-none focus:border-cyan-500"
+              disabled={sending}
             />
             <button
               type="submit"
               className="rounded-lg bg-cyan-500 px-3 py-1 text-sm font-semibold text-white disabled:opacity-40"
               disabled={!canSend}
             >
-              Send
+              {sending ? "…" : "Send"}
             </button>
           </form>
         </section>

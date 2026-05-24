@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Router } from "express";
+import { sendApplicationConfirmationEmail } from "../lib/email.js";
 import { User } from "../models/User.js";
 import { Application } from "../models/Application.js";
 
@@ -31,7 +32,22 @@ router.post("/", async (req, res) => {
     skills,
     message,
   });
+
+  let confirmationEmailSent = false;
+  try {
+    confirmationEmailSent = await sendApplicationConfirmationEmail({
+      to: user.email,
+      name: user.name,
+      position,
+      skills,
+      message,
+    });
+  } catch (err) {
+    console.error("Failed to send application confirmation email", err);
+  }
+
   res.status(201).json({
+    confirmationEmailSent,
     application: {
       id: String(doc._id),
       userId: String(doc.userId),
