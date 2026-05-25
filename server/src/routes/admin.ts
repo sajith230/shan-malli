@@ -258,6 +258,9 @@ router.get("/applications", async (_req, res) => {
       position: a.position,
       skills: a.skills,
       message: a.message,
+      cvUrl: a.cvUrl,
+      cvPublicId: a.cvPublicId,
+      cvFileName: a.cvFileName,
       status: a.status,
       createdAt: a.createdAt?.toISOString(),
     }))

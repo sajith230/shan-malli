@@ -8,6 +8,9 @@ const applicationSchema = new Schema(
     position: { type: String, required: true },
     skills: { type: String, default: "" },
     message: { type: String, default: "" },
+    cvUrl: { type: String, default: "" },
+    cvPublicId: { type: String, default: "" },
+    cvFileName: { type: String, default: "" },
     status: {
       type: String,
       enum: ["pending", "reviewed", "accepted", "rejected"],
