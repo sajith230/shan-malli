@@ -26,11 +26,6 @@ export default function Home() {
               </Link>
             </div>
           </div>
-          <div className="animate-float-soft rounded-xl border border-white/30 bg-white/15 p-4 text-sm">
-            <p className="font-semibold text-white">Default Admin Account</p>
-            <p className="mt-2 text-blue-100">Email: admin@campus.ai</p>
-            <p className="text-blue-100">Password: admin123</p>
-          </div>
         </div>
       </div>
 

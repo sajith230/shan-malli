@@ -19,6 +19,9 @@ type AppContextType = {
     position: string;
     skills: string;
     message: string;
+    cvUrl: string;
+    cvPublicId: string;
+    cvFileName: string;
   }) => Promise<{ ok: boolean; message: string }>;
 };
 
@@ -147,6 +150,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
               position: input.position,
               skills: input.skills,
               message: input.message,
+              cvUrl: input.cvUrl,
+              cvPublicId: input.cvPublicId,
+              cvFileName: input.cvFileName,
             }),
           });
           return { ok: true, message: "Application submitted successfully." };

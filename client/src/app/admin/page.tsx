@@ -94,7 +94,6 @@ export default function AdminPage() {
     if (!currentUser?.id || currentUser.role !== "admin") {
       return;
     }
-    setLoadError(null);
     try {
       const [dash, userList, jobList, appList] = await Promise.all([
         apiFetch<Dashboard>("/api/admin/dashboard", { userId: currentUser.id }),
@@ -102,6 +101,7 @@ export default function AdminPage() {
         apiFetch<JobRow[]>("/api/admin/jobs", { userId: currentUser.id }),
         apiFetch<JobApplication[]>("/api/admin/applications", { userId: currentUser.id }),
       ]);
+      setLoadError(null);
       setDashboard(dash);
       setUsers(userList);
       setJobs(jobList);
@@ -109,10 +109,14 @@ export default function AdminPage() {
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : "Failed to load admin data");
     }
-  }, [currentUser?.id, currentUser?.role]);
+  }, [currentUser]);
 
   useEffect(() => {
-    void loadAll();
+    const timeoutId = window.setTimeout(() => {
+      void loadAll();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [loadAll]);
 
   const roleBars = useMemo(() => {
@@ -552,13 +556,14 @@ export default function AdminPage() {
 
       <div className="card overflow-x-auto">
         <h2 className="mb-3 text-lg font-semibold">Applications</h2>
-        <table className="w-full min-w-[880px] text-left text-sm">
+        <table className="w-full min-w-[980px] text-left text-sm">
           <thead>
             <tr className="border-b bg-slate-50/80">
               <th className="px-2 py-2">Name</th>
               <th className="px-2 py-2">Email</th>
               <th className="px-2 py-2">Position</th>
               <th className="px-2 py-2">Skills</th>
+              <th className="px-2 py-2">CV</th>
               <th className="px-2 py-2">Status</th>
               <th className="px-2 py-2">Date</th>
             </tr>
@@ -566,7 +571,7 @@ export default function AdminPage() {
           <tbody>
             {applications.length === 0 ? (
               <tr>
-                <td className="px-2 py-4 text-slate-500" colSpan={6}>
+                <td className="px-2 py-4 text-slate-500" colSpan={7}>
                   No applications yet.
                 </td>
               </tr>
@@ -577,6 +582,20 @@ export default function AdminPage() {
                   <td className="px-2 py-2">{item.email}</td>
                   <td className="px-2 py-2">{item.position}</td>
                   <td className="px-2 py-2">{item.skills}</td>
+                  <td className="px-2 py-2">
+                    {item.cvUrl ? (
+                      <a
+                        href={item.cvUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-medium text-cyan-700 hover:underline"
+                      >
+                        {item.cvFileName || "View CV"}
+                      </a>
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
+                  </td>
                   <td className="px-2 py-2">
                     <select
                       className="rounded border px-2 py-1 text-xs"

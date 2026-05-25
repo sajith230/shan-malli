@@ -17,6 +17,9 @@ export type JobApplication = {
   position: string;
   skills: string;
   message: string;
+  cvUrl?: string;
+  cvPublicId?: string;
+  cvFileName?: string;
   status: "pending" | "reviewed" | "accepted" | "rejected";
   createdAt: string;
 };

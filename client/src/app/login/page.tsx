@@ -40,9 +40,6 @@ export default function LoginPage() {
     <section className="page-container stagger-in">
       <div className="card mx-auto max-w-md animate-fade-in">
         <h1 className="text-2xl font-bold">{mode === "login" ? "Login" : "Create Account"}</h1>
-        <p className="mt-1 text-xs text-slate-500">
-          API auth — seed admin: admin@campus.ai / admin123 (run server once to seed MongoDB)
-        </p>
         <form onSubmit={onSubmit} className="mt-4 space-y-3">
           {mode === "register" && (
             <input
